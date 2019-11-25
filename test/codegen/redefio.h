@@ -14,17 +14,32 @@ inline void printf(char exp)
 {
     std::printf("%c\n", exp);
 }
+inline void _printf(const char *str)
+{
+    for (auto p = str; *p != '\0'; ++p) {
+        if (*p == '\n') {
+            std::printf("\\n");
+            continue;
+        }
+        else {
+            std::printf("%c", *p);
+        }
+    }
+}
 inline void printf(const char *str)
 {
-    std::printf("%s\n", str);
+    _printf(str);
+    std::putchar('\n');
 }
 inline void printf(const char *str, int exp)
 {
-    std::printf("%s%d\n", str, exp);
+    _printf(str);
+    std::printf("%d\n", exp);
 }
 inline void printf(const char *str, char exp)
 {
-    std::printf("%s%c\n", str, exp);
+    _printf(str);
+    std::printf("%c\n", exp);
 }
 // Type matching trade-off...
 inline void scanf(int &arg1)
