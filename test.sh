@@ -29,6 +29,13 @@ if (( $# > 0 )); then
 else
     id=1
 fi
+
+if (( $# > 1 )); then
+    tag=_$2
+else
+    tag=
+fi
+
 root=.
 lib_dir=$root/lib
 test_dir=$root/test/codegen
@@ -37,15 +44,15 @@ mars=$lib_dir/Mars_Compiler.jar
 intermediate_code=$root/17182680_刘丰博_优化前中间代码.txt
 mips_file=$root/mips.txt
 
-stdin_file=$test_dir/case_${id}_stdin.txt
-stdout_file=$test_dir/case_${id}_stdout.txt
-standard_file=$test_dir/case_${id}_standard.txt
-test_asm=$test_dir/case_${id}_mips.asm
-test_src=$test_dir/case_${id}_src.cc
-test_ir=$test_dir/case_${id}_ir.txt
-test_exec=$test_dir/case_${id}_exec.out
+stdin_file=$test_dir/case_${id}${tag}_stdin.txt
+stdout_file=$test_dir/case_${id}${tag}_stdout.txt
+standard_file=$test_dir/case_${id}${tag}_standard.txt
+test_asm=$test_dir/case_${id}${tag}_mips.asm
+test_src=$test_dir/case_${id}${tag}_src.cc
+test_ir=$test_dir/case_${id}${tag}_ir.txt
+test_exec=$test_dir/case_${id}${tag}_exec.out
 
-# Make (Uncomment it if you need)
+# Make
 # make -s run
 
 # Copy original output files to test dir
@@ -55,8 +62,11 @@ cp $mips_file $test_asm
 # Generate equivalent clang compilable source code
 echo "#include \"redefio.h\"" > $test_src
 cat testfile.txt >> $test_src
-# Replace "void main" with "int main"
-sed -i 's/void main[ ]*(/int main(/' $test_src
+# Replace "void main" with "int main" and force to return 0
+sed -i 's/void main[ ]*(/#define return return 0\nint main(/' $test_src
+# Prevent compiler from recognizing "++"/"--" as increment/decrement operator
+sed -i 's/++/+ +/g' $test_src
+sed -i 's/--/- -/g' $test_src
 echo -e "${BLUE}$test_src successfully generated.${RESTORE}\n"
 
 read_int_cnt=$(grep -oe 'read int' ${test_asm} | wc -l)
