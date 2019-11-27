@@ -88,7 +88,7 @@ else
 fi
 
 echo -en "${PURPLE}Compiling standard source code...${RESTORE}\n"
-clang++ -O1 $test_src -o $test_exec
+g++ -O1 $test_src -o $test_exec
 
 echo -en "${GREEN}Running standard source code...${RESTORE}\n"
 $test_exec < $stdin_file > $standard_file 

@@ -3,7 +3,7 @@
 
 ## Enviroment
   - Ubuntu 18.04 (WSL)
-  - clang 6.0.0
+  - clang 6.0.0 / g++ 7.4.0 (Recommend because it's as *lame* as our compiler so that we can get the same result.)
   
 ## How to use
   - Copy `redefio.h` and `test.sh` to the appropriate position, make sure you have the same directory structure (run `tree`) as below:
