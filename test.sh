@@ -43,30 +43,37 @@ test_dir=$root/test/codegen
 mars=$lib_dir/Mars_Compiler.jar
 intermediate_code=$root/17182680_刘丰博_优化前中间代码.txt
 mips_file=$root/mips.txt
+test_file=$root/testfile.txt
 
 stdin_file=$test_dir/case_${id}${tag}_stdin.txt
 stdout_file=$test_dir/case_${id}${tag}_stdout.txt
 standard_file=$test_dir/case_${id}${tag}_standard.txt
 test_asm=$test_dir/case_${id}${tag}_mips.asm
 test_src=$test_dir/case_${id}${tag}_src.cc
+test_src_tmp=$test_dir/case_${id}${tag}_src.tmp.cc
 test_ir=$test_dir/case_${id}${tag}_ir.txt
 test_exec=$test_dir/case_${id}${tag}_exec.out
 
 # Make
-# make -s run
+make -s run
+if [ $? -ne 0 ]; then
+    echo -e "make failed, aborting..\n"
+    exit
+fi
 
 # Copy original output files to test dir
 cp $intermediate_code $test_ir
 cp $mips_file $test_asm
+cp $test_file $test_src
 
 # Generate equivalent clang compilable source code
-echo "#include \"redefio.h\"" > $test_src
-cat testfile.txt >> $test_src
+echo "#include \"redefio.h\"" > $test_src_tmp
+cat $test_src >> $test_src_tmp
 # Replace "void main" with "int main" and force to return 0
-sed -i 's/void main[ ]*(/#define return return 0\nint main(/' $test_src
+sed -i 's/void main[ ]*(/#define return return 0\nint main(/' $test_src_tmp
 # Prevent compiler from recognizing "++"/"--" as increment/decrement operator
-sed -i 's/++/+ +/g' $test_src
-sed -i 's/--/- -/g' $test_src
+sed -i 's/++/+ +/g' $test_src_tmp   # FIXME
+sed -i 's/--/- -/g' $test_src_tmp
 echo -e "${BLUE}$test_src successfully generated.${RESTORE}\n"
 
 read_int_cnt=$(grep -oe 'read int' ${test_asm} | wc -l)
@@ -88,7 +95,8 @@ else
 fi
 
 echo -en "${PURPLE}Compiling standard source code...${RESTORE}\n"
-g++ -O1 $test_src -o $test_exec
+g++ -O1 $test_src_tmp -o $test_exec
+rm $test_src_tmp
 
 echo -en "${GREEN}Running standard source code...${RESTORE}\n"
 $test_exec < $stdin_file > $standard_file 
@@ -96,6 +104,6 @@ rm $test_exec
 echo -en "${LGREEN}Standard output has been redirected to $standard_file...${RESTORE}\n"
 
 echo -en "${CYAN}Diffing $standard_file and $stdout_file...${RESTORE}\n"
-diff -Z $standard_file $stdout_file
+timeout 3 diff -Z $standard_file $stdout_file
 
 echo -en "${LIGHTGRAY}^^^^^^^^^^^^^^^^^^^ Done ^^^^^^^^^^^^^^^^^^^${RESTORE}\n"
